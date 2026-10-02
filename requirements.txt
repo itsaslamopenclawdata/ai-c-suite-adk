@@ -1,0 +1,10 @@
+# Pinned deliberately. An unpinned google-adk once resolved from 1.x to 2.x
+# between builds, which is a silent API break the day before a demo.
+google-adk==2.7.1
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+pydantic==2.13.4
+pydantic-settings==2.14.2
+python-multipart==0.0.32
+google-cloud-secret-manager==2.30.0
+google-cloud-firestore==2.28.0

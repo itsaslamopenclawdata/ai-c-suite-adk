@@ -1,0 +1,41 @@
+# Builds the ADK C-Suite image and pushes it to Artifact Registry.
+#
+#   gcloud builds submit --config deploy/cloudbuild.yaml \
+#     --substitutions=_IMAGE=...,_IMAGE_LATEST=...
+#
+# NOTE: Cloud Build resolves enum-typed fields (options.machineType,
+# options.logging, ...) when it parses this file, BEFORE substitutions are
+# applied. A ${_VAR} in one of those fields is never a valid enum literal and
+# the build fails with ".options.machineType: unused". Keep substitutions out
+# of enum fields.
+steps:
+  # Warm the layer cache. Ignored on the first build, when :latest is absent.
+  - name: gcr.io/cloud-builders/docker
+    id: pull-cache
+    entrypoint: bash
+    args:
+      - -c
+      - docker pull ${_IMAGE_LATEST} || echo "No cached image yet; building from scratch."
+
+  - name: gcr.io/cloud-builders/docker
+    id: build
+    args:
+      - build
+      - --file=Dockerfile
+      - --tag=${_IMAGE}
+      - --tag=${_IMAGE_LATEST}
+      - --cache-from=${_IMAGE_LATEST}
+      - .
+
+images:
+  - ${_IMAGE}
+  - ${_IMAGE_LATEST}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _IMAGE: ""
+  _IMAGE_LATEST: ""
+
+timeout: 1200s
